@@ -1,4 +1,5 @@
-const { Cart } = require("../models/cart");
+const Cart = require("../models/cart");
+
 const Product = require("../models/product");
 
 
@@ -143,5 +144,65 @@ exports.deleteCart = async (req, res) => {
   } catch (e) {
     console.log(e);
     return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+exports.incrementQuantity = async (req, res) => {
+  try {
+    console.log('test');
+    
+    const { productId } = req.body;
+    const userId = req.user._id ? req.user._id.toString() : req.user.id;
+
+    const cart = await Cart.findOne({ $or: [{ user: userId }, { userId: userId }] });
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+    const item = cart.items.find((i) => 
+      (i.productId && i.productId._id ? i.productId._id.toString() : i.productId.toString()) === productId || 
+      (i._id && i._id.toString() === productId)
+    );
+        console.log("item:",item);
+
+
+    if (!item) return res.status(404).json({ message: "Item not found" });
+
+    item.quantity = item.quantity + 1;
+    
+    await cart.save();
+    return res.status(200).json({ message: "Quantity increased", cart });
+  } catch (e) {
+    return res.status(400).json({ error: e.message });
+  }
+};
+
+exports.decrementQuantity = async (req, res) => {
+  try {
+    console.log('test');
+    
+    const { productId } = req.body;
+    const userId = req.user._id ? req.user._id.toString() : req.user.id;
+
+    const cart = await Cart.findOne({ $or: [{ user: userId }, { userId: userId }] });
+    if (!cart) return res.status(404).json({ message: "Cart not found" });
+
+    const item = cart.items.find((i) => 
+      (i.productId && i.productId._id ? i.productId._id.toString() : i.productId.toString()) === productId || 
+      (i._id && i._id.toString() === productId)
+    );
+        console.log("item:",item);
+
+
+    if (!item) return res.status(404).json({ message: "Item not found" });
+
+ if (item.quantity > 1) {
+        item.quantity = item.quantity - 1;
+    } else {
+        // If it is 1, do nothing. It stays 1.
+        console.log("Quantity is already 1. Skipping update.");
+    }
+
+    await cart.save();
+    return res.status(200).json({ message: "Quantity decreased", cart });
+  } catch (e) {
+    return res.status(400).json({ error: e.message });
   }
 };

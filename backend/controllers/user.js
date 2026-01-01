@@ -49,6 +49,7 @@ exports.signUp = async (req, res) => {
     } catch (err) {
       console.log("error in sending mail", err);
     }
+console.log('password:', encryptedPassword);
 
     await newUser.save();
     console.log("user data:", newUser);
@@ -84,11 +85,14 @@ const token = generateToken(user);
     //     return res.status(400).json({message: 'password is incorrect'})
     // }
     const result = await bcrypt.compare(password, user.password);
+    console.log('password',result);
+    
       if (result) {
         console.log("user sign in successful", { user });
         return res
           .status(200)
           .json({ message: "user was able to sign in successfully", user: user ,token:token});
+          
       }
     
   } catch (err) {
