@@ -1,6 +1,8 @@
 const ShippingAddress = require("../models/address");
 
 exports.addAddress = async (req, res) => {
+  console.log("Request Body:", req.body);
+  
   const { name, phoneNumber, address, city, postalCode, country } = req.body;
   console.log(req.body);
   
@@ -29,7 +31,7 @@ exports.addAddress = async (req, res) => {
     await newAddress.save();
     console.log("address added to db", newAddress);
 
-    return res.status(200).json({
+    return res.status(201).json({
       message: "Shipping Address added successfully",
       address: newAddress,
     });
@@ -49,6 +51,7 @@ exports.getAddresses = async (req, res) => {
     }
 
     const addresses = await ShippingAddress.find({ userId });
+    console.log("DEBUG - Fetched Addresses:", addresses);
     return res.status(200).json({ addresses });
 
   } catch (e) {
