@@ -5,11 +5,11 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      trim: true, // ✅ Good practice: removes extra spaces
+      trim: true,
     },
     description: {
       type: String,
-      trim: true, // ✅ Good practice
+      trim: true,
     },
     price: {
       type: Number,
@@ -17,18 +17,7 @@ const productSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: [
-        'electronics',
-        'fashion',
-        'home',
-        'beauty',
-        'sports',
-        'toys',
-        'books',
-        'automotive',
-        'grocery',
-        'other'
-      ],
+      enum: ['electronics', 'fashion', 'home', 'beauty', 'sports', 'toys', 'books', 'automotive', 'grocery', 'other'],
       default: 'other'
     },
     quantity: {
@@ -37,16 +26,11 @@ const productSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      // required: true,
     }
   },
   { timestamps: true }
 );
-
-// ✅ SEARCH RANKING INDEX
-// This tells MongoDB: "When searching text, check Name and Description."
-// "Name is worth 10 points, Description is worth 5 points."
-productSchema.index({ name: 'text', description: 'text' }, { weights: { name: 10, description: 5 } });
+ 
 
 const Product = mongoose.model("Product", productSchema);
 module.exports = Product;
