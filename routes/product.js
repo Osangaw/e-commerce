@@ -15,7 +15,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 } }) 
 
 router.post("/add",upload.single("image"), createProduct);
-router.get("/search/:name", searchProduct);
+router.get("/search/:key", searchProduct);
 router.get("/all", allProducts);
 router.patch("/update/:id", updateProduct);
 router.get(`/getById/:id`, getProductById);

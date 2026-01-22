@@ -15,7 +15,7 @@ const app = express();
 
 // ✅ FIX: Explicit CORS Config to allow PATCH and Authorization headers
 app.use(cors({
-    origin: '*', // Allow all origins (Change to 'http://localhost:3000' for production)
+    origin: '*',
     methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
 }));

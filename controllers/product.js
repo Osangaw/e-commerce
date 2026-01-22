@@ -40,22 +40,6 @@ exports.createProduct = async (req, res) => {
   }
 };
 
-exports.searchProduct = async (req, res) => {
-  try {
-    const { name } = req.query;
-    const products = await Product.find({
-      name: { $regex: name, $options: "i" },
-    });
-    if (products.length === 0) {
-      return res.status(404).json({ message: "No product found" });
-    }
-
-    console.log(` Search results for: ${name}`, products);
-    return res.status(200).json(products);
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-};
 exports.allProducts = async (req, res) => {
   try {
     const products = await Product.find({});
@@ -66,7 +50,6 @@ exports.allProducts = async (req, res) => {
       products,
     });
 
-    // console.log("All products:", products);
   } catch (e) {
     console.log("Error fetching products:", e);
     return res.status(500).json({ message: "Error in getting all products" });
@@ -148,3 +131,21 @@ exports.deleteAllProducts = async (req, res) => {
     });
   }
 };
+
+exports.searchProduct= async (req,res) =>{
+  try{
+    const {key} = req.params;
+
+    const results = await Product.find({
+      $or:[
+        {name:{$regex:key,$options:"i"}},
+        {description:{$regex:key,$options:"i"}},
+        {category:{$regex:key,$options:"i"}}
+      ]
+    });
+    console.log(` Search results for: ${key}`, products);
+    return res.status(200).json(results)
+  }catch(error){
+    return res.status(500).json({message: "search failed"})
+  }
+}
