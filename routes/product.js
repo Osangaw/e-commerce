@@ -13,7 +13,19 @@ const storage = multer.diskStorage({
 })
 
 const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 } }) 
-
+router.get("/fix-search-index", async (req, res) => {
+  try {
+    // 1. Drop existing indexes (to clear conflicts)
+    await Product.collection.dropIndexes();
+    
+    // 2. Force create the new Text Index
+    await Product.collection.createIndex({ name: 'text', description: 'text' }, { weights: { name: 10, description: 5 } });
+    
+    res.send("✅ Success! Search Index has been rebuilt.");
+  } catch (error) {
+    res.status(500).send("❌ Error rebuilding index: " + error.message);
+  }
+});
 router.post("/add",upload.single("image"), createProduct);
 router.get("/search/:key", searchProduct);
 router.get("/all", allProducts);
