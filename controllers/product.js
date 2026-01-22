@@ -144,7 +144,7 @@ exports.searchProduct= async (req,res) =>{
         {category:{$regex:key,$options:"i"}}
       ]
     });
-    console.log(` Search results for: ${key}`, products);
+    console.log(` Search results for: ${key}`, results);
     return res.status(200).json(results)
   }catch(error){
     return res.status(500).json({message: "search failed"})
