@@ -71,6 +71,7 @@ exports.getProductById = async (req, res) => {
     return res.status(500).json({ message: "error in getting product by id" });
   }
 };
+
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
@@ -132,21 +133,43 @@ exports.deleteAllProducts = async (req, res) => {
   }
 };
 
-exports.searchProduct= async (req,res) =>{
-  try{
-    const {key} = req.params;
-    console.log(key);
-    
-    const results = await Product.find({
-      $or:[
-        {name:{$regex:key,$options:"i"}},
-        {description:{$regex:key,$options:"i"}},
-        {category:{$regex:key,$options:"i"}}
-      ]
-    });
-    console.log(` Search results for: ${key}`, results);
-    return res.status(200).json(results)
-  }catch(error){
-    return res.status(500).json({message: "search failed"})
+// ✅ UPGRADED SEARCH CONTROLLER
+exports.searchProduct = async (req, res) => {
+  try {
+    const { key } = req.params;
+    console.log("Searching for:", key);
+
+    let results = [];
+
+    // 1. Try "Ranking" Search first (Needs Full Word match)
+    // This finds best matches and puts them at the top
+    try {
+      results = await Product.find(
+        { $text: { $search: key } },
+        { score: { $meta: "textScore" } }
+      ).sort({ score: { $meta: "textScore" } });
+    } catch (err) {
+      console.log("Text search skipped (Index likely missing), trying Regex...");
+    }
+
+    // 2. If Text Search found nothing (or failed), use Fallback Regex (Partial Match)
+    // This finds "iph" for "iphone"
+    if (results.length === 0) {
+       console.log("No text matches found. Switching to partial regex search...");
+       results = await Product.find({
+        $or: [
+          { name: { $regex: key, $options: "i" } },
+          { description: { $regex: key, $options: "i" } },
+          { category: { $regex: key, $options: "i" } }
+        ]
+      });
+    }
+
+    console.log(`Search results for ${key}:`, results.length);
+    return res.status(200).json(results);
+
+  } catch (error) {
+    console.log("Search Fatal Error:", error);
+    return res.status(500).json({ message: "Search failed" });
   }
-}
+};
