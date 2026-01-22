@@ -135,7 +135,8 @@ exports.deleteAllProducts = async (req, res) => {
 exports.searchProduct= async (req,res) =>{
   try{
     const {key} = req.params;
-
+    console.log(key);
+    
     const results = await Product.find({
       $or:[
         {name:{$regex:key,$options:"i"}},
