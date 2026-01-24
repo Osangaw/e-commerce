@@ -1,7 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-// const bodyParser = require("body-parser"); // Not needed, express.json() is enough
 const connectDB = require('./DB/dataBase');
 
 // Import Routes
@@ -13,19 +12,21 @@ const shippingRoute = require("./routes/address");
 dotenv.config();
 const app = express();
 
-// ✅ FIX: Explicit CORS Config to allow PATCH and Authorization headers
+
 app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'DELETE', 'UPDATE', 'PUT', 'PATCH'],
+    origin: [
+        "http://localhost:3000",
+        "https://react-ecommerce-rouge-three.vercel.app", 
+    ],
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'], // Removed invalid 'UPDATE'
+    credentials: true, // Important if you use cookies or Authorization headers
     allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
 }));
-
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-
+// Routes
 app.use("/", authRoute);
 app.use("/product", productRoute);
 app.use("/cart", cartRoute);
