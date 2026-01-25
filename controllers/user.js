@@ -141,8 +141,9 @@ exports.forgotPassword = async (req, res) => {
         const newToken = new Token({ email, token: otp });
         await newToken.save();
 
-        // 4. Send the Email
-        await sendEmail(email, otp);
+        // 4. Send the Email with the correct Subject
+        // ✅ UPDATED: Added "Password Reset Request" so the user gets the right email layout
+        await sendEmail(email, otp, "Password Reset Request");
 
         return res.status(200).json({ message: "OTP sent successfully" });
 
