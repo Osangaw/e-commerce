@@ -1,12 +1,18 @@
 const nodemailer = require("nodemailer");
 
+
 const createTransporter = () => {
     return nodemailer.createTransport({
-        service: "gmail",
+        host: "smtp.gmail.com", // Explicitly use Gmail SMTP
+        port: 587,              // Standard secure port for Cloud Servers
+        secure: false,          // False for port 587
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS,
         },
+        tls: {
+            rejectUnauthorized: false // Helps prevent SSL errors on Render
+        }
     });
 }
 
@@ -73,7 +79,7 @@ const sendEmail = async(email, otp, subject = "Email Verification") => {
     
     const mailOptions = {
         from: {
-            name: "MyStore App", // Custom Sender Name
+            name: "MyStore App",
             address: process.env.EMAIL_USER
         },
         to: email,
