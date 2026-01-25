@@ -123,46 +123,73 @@ exports.verifyEmail = async (req, res) => {
 };
 
 exports.forgotPassword = async (req, res) => {
-    // 1. Get Email
-    const { email } = req.body; 
+    try {
+        // 1. Get Email
+        const { email } = req.body; 
 
-    // 2. Generate the Token HERE
-    const otp = randomNumber(); 
+        // ✅ SAFETY CHECK: Does the user exist?
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User with this email does not exist" });
+        }
 
-    // 3. Save it to DB so we remember it for Step 2
-    await Token.deleteMany({ email }); // Delete old ones
-    const newToken = new Token({ email, token: otp });
-    await newToken.save();
+        // 2. Generate the Token
+        const otp = randomNumber(); 
 
-    // 4. Send the Email
-    await sendEmail(email, otp);
+        // 3. Save it to DB (Delete old tokens first to prevent duplicates)
+        await Token.deleteMany({ email }); 
+        const newToken = new Token({ email, token: otp });
+        await newToken.save();
 
-    res.status(200).json({ message: "OTP sent" });
+        // 4. Send the Email
+        await sendEmail(email, otp);
+
+        return res.status(200).json({ message: "OTP sent successfully" });
+
+    } catch (error) {
+        console.log("Forgot Password Error:", error);
+        return res.status(500).json({ message: "Something went wrong, please try again." });
+    }
 };
 
 exports.resetPassword = async (req, res) => {
-    // 1. Get ALL data: Email (to find user), OTP (to verify), New Password
-    const { email, otp, newPassword } = req.body;
+    try {
+        // 1. Get ALL data
+        const { email, otp, newPassword } = req.body;
 
-    // 2. Retrieve the "Memory" from Step 1
-    const validToken = await Token.findOne({ email });
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
 
-    // 3. Validate: Did they provide the token we saved in Step 1?
-    if (!validToken || validToken.token !== otp.toString()) {
-        return res.status(400).json({ message: "Wrong OTP" });
+        // 2. Retrieve the Token from DB
+        const validToken = await Token.findOne({ email });
+
+        // 3. Validate: Does token exist? Does it match?
+        if (!validToken || validToken.token !== otp.toString()) {
+            return res.status(400).json({ message: "Invalid or expired OTP" });
+        }
+
+        // 4. Hash the new password
+        const salt = await bcrypt.genSalt(10);
+        const encryptedPassword = await bcrypt.hash(newPassword, salt);
+        
+        // 5. Update the User
+        const user = await User.findOneAndUpdate(
+            { email }, 
+            { password: encryptedPassword }
+        );
+
+        if (!user) {
+             return res.status(404).json({ message: "User not found" });
+        }
+
+        // 6. Delete Token (Cleanup)
+        await Token.findOneAndDelete({ email });
+
+        return res.status(200).json({ message: "Password Changed Successfully" });
+
+    } catch (error) {
+        console.log("Reset Password Error:", error);
+        return res.status(500).json({ message: "Something went wrong, please try again." });
     }
-
-    // 4. If correct, allow the Password Change
-    const salt = await bcrypt.genSalt(10);
-    const encryptedPassword = await bcrypt.hash(newPassword, salt);
-    
-    await User.findOneAndUpdate(
-        { email }, 
-        { password: encryptedPassword }
-    );
-
-    // 5. Delete Token (Process complete)
-    await Token.findOneAndDelete({ email });
-
-    res.status(200).json({ message: "Password Changed" });
 };
