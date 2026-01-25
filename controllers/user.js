@@ -63,40 +63,34 @@ console.log('password:', encryptedPassword);
 
 exports.signIn = async (req, res) => {
   try {
-    // const { email, userPassword } = req.body;
     const { email, password } = req.body;
     console.log("email", email);
-    console.log("password", password);
+
     const user = await User.findOne({ email: email });
-    console.log('user info',user);
     
-const token = generateToken(user);
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: `User with ${email} does not exist` });
+      return res.status(400).json({ message: `User with ${email} does not exist` });
     }
-    console.log("user..........................", user);
-        console.log("Token", token);
 
-
-    // const ValidPassword = await User.authenticate(userPassword)
-    // if (!ValidPassword) {
-    //     return res.status(400).json({message: 'password is incorrect'})
-    // }
     const result = await bcrypt.compare(password, user.password);
-    console.log('password',result);
+    console.log('password check result:', result); // This is printing 'false' right now
     
-      if (result) {
-        console.log("user sign in successful", { user });
-        return res
-          .status(200)
-          .json({ message: "user was able to sign in successfully", user: user ,token:token});
-          
-      }
+    if (result) {
+        const token = generateToken(user);
+        return res.status(200).json({ 
+            message: "user was able to sign in successfully", 
+            user: user, 
+            token: token
+        });
+    } else {
+        // ✅ CRITICAL FIX: You were missing this part!
+        // If password is wrong, tell the frontend!
+        return res.status(400).json({ message: "Invalid Password" });
+    }
     
   } catch (err) {
     console.log("unable to sign in ", err);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
