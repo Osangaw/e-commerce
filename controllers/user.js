@@ -11,6 +11,10 @@ const generateToken = (user) => {
     { expiresIn: "7d" }
   );
 };
+function randomNumber() {
+      return Math.floor(100000 + Math.random() * 900000);
+    }
+
 exports.signUp = async (req, res) => {
     console.log("Received body:", req.body);
   try {
@@ -29,9 +33,6 @@ exports.signUp = async (req, res) => {
     }
     const salt = await bcrypt.genSalt(10);
     const encryptedPassword = await bcrypt.hash(password, salt);
-    function randomNumber() {
-      return Math.floor(100000 + Math.random() * 900000);
-    }
 
     const newUser = new User({
       name,
@@ -119,4 +120,49 @@ exports.verifyEmail = async (req, res) => {
     console.log("error in email verification", err);
     return res.status(500).json({ message: "internal server error" });
   }
+};
+
+exports.forgotPassword = async (req, res) => {
+    // 1. Get Email
+    const { email } = req.body; 
+
+    // 2. Generate the Token HERE
+    const otp = randomNumber(); 
+
+    // 3. Save it to DB so we remember it for Step 2
+    await Token.deleteMany({ email }); // Delete old ones
+    const newToken = new Token({ email, token: otp });
+    await newToken.save();
+
+    // 4. Send the Email
+    await sendEmail(email, otp);
+
+    res.status(200).json({ message: "OTP sent" });
+};
+
+exports.resetPassword = async (req, res) => {
+    // 1. Get ALL data: Email (to find user), OTP (to verify), New Password
+    const { email, otp, newPassword } = req.body;
+
+    // 2. Retrieve the "Memory" from Step 1
+    const validToken = await Token.findOne({ email });
+
+    // 3. Validate: Did they provide the token we saved in Step 1?
+    if (!validToken || validToken.token !== otp.toString()) {
+        return res.status(400).json({ message: "Wrong OTP" });
+    }
+
+    // 4. If correct, allow the Password Change
+    const salt = await bcrypt.genSalt(10);
+    const encryptedPassword = await bcrypt.hash(newPassword, salt);
+    
+    await User.findOneAndUpdate(
+        { email }, 
+        { password: encryptedPassword }
+    );
+
+    // 5. Delete Token (Process complete)
+    await Token.findOneAndDelete({ email });
+
+    res.status(200).json({ message: "Password Changed" });
 };
