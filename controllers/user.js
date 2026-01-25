@@ -16,7 +16,6 @@ function randomNumber() {
     }
 
 exports.signUp = async (req, res) => {
-    console.log("Received body:", req.body);
   try {
     const { name, email, phoneNumber, password } = req.body;
     console.log("req.body:", req.body);
@@ -124,7 +123,6 @@ exports.verifyEmail = async (req, res) => {
 
 exports.forgotPassword = async (req, res) => {
     try {
-        // 1. Get Email
         const { email } = req.body; 
 
         // ✅ SAFETY CHECK: Does the user exist?
@@ -132,9 +130,10 @@ exports.forgotPassword = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User with this email does not exist" });
         }
-
         // 2. Generate the Token
         const otp = randomNumber(); 
+        console.log('t;', otp);
+        
 
         // 3. Save it to DB (Delete old tokens first to prevent duplicates)
         await Token.deleteMany({ email }); 
