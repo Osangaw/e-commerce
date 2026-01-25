@@ -12,21 +12,36 @@ const shippingRoute = require("./routes/address");
 dotenv.config();
 const app = express();
 
-
 app.use(cors({
-    origin: [
-        "http://localhost:3000",
-        "https://react-ecommerce-rouge-three.vercel.app", 
-    ],
-    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'], // Removed invalid 'UPDATE'
-    credentials: true, // Important if you use cookies or Authorization headers
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps, curl, or Postman)
+        if (!origin) return callback(null, true);
+
+        // 1. Allow Localhost (Development)
+        if (origin === "http://localhost:3000") {
+            return callback(null, true);
+        }
+
+        // 2. Allow ANY Vercel URL (Production & Previews)
+        if (origin.endsWith(".vercel.app")) {
+            return callback(null, true);
+        }
+
+        // Optional: Allow custom domains if you buy one later
+        // if (origin === "https://www.mystore.com") return callback(null, true);
+
+        // Block everything else
+        console.log("Blocked by CORS:", origin); 
+        return callback(new Error('Not allowed by CORS'), false);
+    },
+    methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
+    credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'X-Requested-With', 'Accept']
 }));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Routes
 app.use("/", authRoute);
 app.use("/product", productRoute);
 app.use("/cart", cartRoute);
