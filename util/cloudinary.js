@@ -1,13 +1,16 @@
-const cloudinary = require("cloudinary").v2; // Use v2 syntax
+const cloudinary = require("cloudinary");
 const fs = require("fs");
 
-// ✅ Use Environment Variables
+const API_KEY = "176928677163175"
+const API_SECRET= "EZLhwIM6Y8K9DtAOQJS8dysDmRQ"
+const CLOUD_NAME = "dsm2zoosd"
 cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
+  cloud_name: CLOUD_NAME,
+  api_key: API_KEY,
+  api_secret: API_SECRET,
   secure: true,
 });
+
 
 const uploadFile = async (filePath, folder = "Js-bookstore") => {
   try {
