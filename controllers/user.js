@@ -42,9 +42,9 @@ exports.signUp = async (req, res) => {
     try {
       const otp = randomNumber();
       const token = new Token({ email, token: otp });
-      await sendEmail(email, otp);
-      await token.save();
-      console.log("email sent", otp);
+     // await sendEmail(email, otp);
+      //await token.save();
+      //console.log("email sent", otp);
     } catch (err) {
       console.log("error in sending mail", err);
     }
