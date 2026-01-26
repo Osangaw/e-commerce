@@ -3,10 +3,7 @@ const { addAddress, getAddresses, updateAddress, deleteAddress, getAddressById }
 const { auth } = require("../middleware");
 const router = express.Router();
 
-router.use((req, res, next) => {
-    console.log(`[ADDRESS ROUTE HIT] Method: ${req.method} | URL: ${req.url}`);
-    next();
-});
+
 router.patch("/edit", auth, updateAddress)
 router.post("/add",auth, addAddress)
 router.get("/get",auth, getAddresses)

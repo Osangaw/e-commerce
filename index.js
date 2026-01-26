@@ -8,6 +8,7 @@ const authRoute = require('./routes/user');
 const productRoute = require('./routes/product');
 const cartRoute = require('./routes/cart');
 const shippingRoute = require("./routes/address");
+const orderRoute = require("./routes/order");
 
 dotenv.config();
 const app = express();
@@ -46,6 +47,7 @@ app.use("/", authRoute);
 app.use("/product", productRoute);
 app.use("/cart", cartRoute);
 app.use("/address", shippingRoute);
+app.use("/order", orderRoute)
 
 const PORT = process.env.PORT || 3030;
 
