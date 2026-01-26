@@ -18,7 +18,6 @@ function randomNumber() {
 exports.signUp = async (req, res) => {
   try {
     const { name, email, phoneNumber, password } = req.body;
-    console.log("req.body:", req.body);
     if (!name || !email || !phoneNumber || !password) {
             console.log("validation error");
       return res.status(400).json({ message: "All fields are required" });
@@ -38,7 +37,7 @@ exports.signUp = async (req, res) => {
       email,
       phoneNumber,
       password: encryptedPassword,
-     // role
+      role,
     });
     try {
       const otp = randomNumber();
