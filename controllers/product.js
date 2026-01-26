@@ -83,9 +83,6 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-// Don't forget to import your uploadFile helper at the top if not already there
-const { uploadFile } = require('../util/cloudinary'); // or wherever you stored it
-
 exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
