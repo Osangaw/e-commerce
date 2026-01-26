@@ -26,11 +26,17 @@ const productSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-    }
+      trim: true
+    },
+    images: [
+      {
+        img: { type: String, required: true },
+        public_id: { type: String } // Store this to delete from Cloudinary later
+      }
+    ]
   },
   { timestamps: true }
 );
- 
 
 const Product = mongoose.model("Product", productSchema);
 module.exports = Product;
