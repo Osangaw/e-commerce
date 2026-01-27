@@ -1,7 +1,17 @@
 const Order = require("../models/order");
 
 exports.addOrder = async (req, res) => {
-  try {
+ try {
+    // 🔍 DEBUG: Print the user to the console
+    console.log("Logged in User from Token:", req.user);
+
+    // 1. Safety Check: Ensure user is logged in
+    // Some JWT libraries use 'id', others use '_id'. We check both.
+    const userId = req.user ? (req.user._id || req.user.id) : null;
+
+    if (!userId) {
+        return res.status(400).json({ error: "User ID missing. Please check your login token." });
+    }
     const { 
         totalAmount, 
         items, 

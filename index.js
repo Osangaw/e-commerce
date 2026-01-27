@@ -27,11 +27,6 @@ app.use(cors({
         if (origin.endsWith(".vercel.app")) {
             return callback(null, true);
         }
-
-        // Optional: Allow custom domains if you buy one later
-        // if (origin === "https://www.mystore.com") return callback(null, true);
-
-        // Block everything else
         console.log("Blocked by CORS:", origin); 
         return callback(new Error('Not allowed by CORS'), false);
     },
