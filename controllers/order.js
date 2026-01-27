@@ -49,7 +49,7 @@ exports.addOrder = async (req, res) => {
     });
 
     const savedOrder = await order.save();
-    await Cart.deleteOne({ user: userId });
+    await Cart.deleteOne({ userId });
     res.status(201).json({ 
         message: "Order placed successfully", 
         order: savedOrder 
