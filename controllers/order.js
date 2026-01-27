@@ -47,7 +47,7 @@ exports.addOrder = async (req, res) => {
 
     // 4. Create the Order
     const order = new Order({
-      user: req.user._id,
+      user: userId,
       addressId,
       totalAmount,
       items,
