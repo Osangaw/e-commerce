@@ -63,7 +63,7 @@ exports.addOrder = async (req, res) => {
 // 2. GET MY ORDERS (User)
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user._id })
+    const orders = await Order.find({ user: req.user.id })
       .select("_id paymentStatus paymentType orderStatus items totalAmount createdAt")
       .populate("items.productId", "name image") // Show product details
       .sort({ createdAt: -1 }); // Newest first
