@@ -1,26 +1,22 @@
 const Order = require("../models/order");
 
 exports.addOrder = async (req, res) => {
- try {
-    // 🔍 DEBUG: Print the user to the console
-    console.log("Logged in User from Token:", req.user);
-
-    // 1. Safety Check: Ensure user is logged in
-    // Some JWT libraries use 'id', others use '_id'. We check both.
-    const userId = req.user ? (req.user._id || req.user.id) : null;
+  try {
+    const userId = req.user.id || req.user._id;
 
     if (!userId) {
-        return res.status(400).json({ error: "User ID missing. Please check your login token." });
+        return res.status(400).json({ error: "User ID not found in token." });
     }
+
     const { 
         totalAmount, 
         items, 
         addressId, 
-        paymentType, // Frontend must send "cod" or "card"
-        paymentInfo  // Required only if paymentType is "card"
+        paymentType, 
+        paymentInfo 
     } = req.body;
 
-    // 1. Define the tracking status (Same for both)
+    // 2. Define Status
     const orderStatus = [
       { type: "ordered", date: new Date(), isCompleted: true },
       { type: "packed", isCompleted: false },
@@ -28,32 +24,26 @@ exports.addOrder = async (req, res) => {
       { type: "delivered", isCompleted: false },
     ];
 
-    // 2. Default Payment Status
+    // 3. Define Payment Status
     let paymentStatus = "pending";
-
-    // 3. Handle Logic Based on Payment Type
     if (paymentType === "cod") {
-        paymentStatus = "pending"; // COD is always pending initially
-    } 
-    else if (paymentType === "card") {
-        // Validation: Online orders MUST have payment proof
+        paymentStatus = "pending";
+    } else if (paymentType === "card") {
         if (!paymentInfo || !paymentInfo.reference) {
             return res.status(400).json({ message: "Payment reference required for online orders" });
         }
-        // If frontend says it's successful, mark as completed
-        // (In a real app, you might verify this ref with Paystack/Stripe API here)
         paymentStatus = "completed"; 
     }
 
-    // 4. Create the Order
+    // 4. Create Order
     const order = new Order({
-      user: userId,
+      user: userId, // ✅ Passes the ID found in your token
       addressId,
       totalAmount,
       items,
       paymentStatus, 
       paymentType,
-      paymentInfo, // This will be null/undefined for COD, which is fine
+      paymentInfo,
       orderStatus,
     });
 
