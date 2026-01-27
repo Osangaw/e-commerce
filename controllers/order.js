@@ -1,10 +1,16 @@
 const Order = require("../models/order");
 
-// 1. CREATE NEW ORDER (User)
 exports.addOrder = async (req, res) => {
   try {
-    // Determine the initial status flow
-    // We initialize all steps so the Admin can just toggle "isCompleted" later
+    const { 
+        totalAmount, 
+        items, 
+        addressId, 
+        paymentType, // Frontend must send "cod" or "card"
+        paymentInfo  // Required only if paymentType is "card"
+    } = req.body;
+
+    // 1. Define the tracking status (Same for both)
     const orderStatus = [
       { type: "ordered", date: new Date(), isCompleted: true },
       { type: "packed", isCompleted: false },
@@ -12,10 +18,33 @@ exports.addOrder = async (req, res) => {
       { type: "delivered", isCompleted: false },
     ];
 
+    // 2. Default Payment Status
+    let paymentStatus = "pending";
+
+    // 3. Handle Logic Based on Payment Type
+    if (paymentType === "cod") {
+        paymentStatus = "pending"; // COD is always pending initially
+    } 
+    else if (paymentType === "card") {
+        // Validation: Online orders MUST have payment proof
+        if (!paymentInfo || !paymentInfo.reference) {
+            return res.status(400).json({ message: "Payment reference required for online orders" });
+        }
+        // If frontend says it's successful, mark as completed
+        // (In a real app, you might verify this ref with Paystack/Stripe API here)
+        paymentStatus = "completed"; 
+    }
+
+    // 4. Create the Order
     const order = new Order({
-      ...req.body,
-      user: req.user._id, // From middleware
-      orderStatus, 
+      user: req.user._id,
+      addressId,
+      totalAmount,
+      items,
+      paymentStatus, 
+      paymentType,
+      paymentInfo, // This will be null/undefined for COD, which is fine
+      orderStatus,
     });
 
     const savedOrder = await order.save();
