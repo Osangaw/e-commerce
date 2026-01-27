@@ -133,7 +133,7 @@ exports.allCarts = async (req, res) => {
 };
 exports.deleteCart = async (req, res) => {
   try {
-    const id = req.params;
+    const userId = req.user.id;
     const deleteCart = await Cart.findByIdAndDelete( id );
     if (!deleteCart) {
       console.log(`Cart with id: ${id} not found`);
