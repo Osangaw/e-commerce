@@ -60,20 +60,22 @@ exports.addOrder = async (req, res) => {
   }
 };
 
-// 2. GET MY ORDERS (User)
 exports.getOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id })
+    const userId = req.user.id || req.user._id;
+
+    // Fetch orders belonging to this specific user
+    const orders = await Order.find({ user: userId })
       .select("_id paymentStatus paymentType orderStatus items totalAmount createdAt")
-      .populate("items.productId", "name image") // Show product details
+      .populate("items.productId", "name image") // Fill in product details
       .sort({ createdAt: -1 }); // Newest first
 
     res.status(200).json({ orders });
   } catch (error) {
+    console.log("Get Orders Error:", error);
     res.status(400).json({ error: error.message });
   }
 };
-
 // 3. GET ALL ORDERS (Admin)
 exports.allOrders = async (req, res) => {
   try {
