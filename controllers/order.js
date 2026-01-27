@@ -69,7 +69,7 @@ exports.getOrders = async (req, res) => {
       .select("_id paymentStatus paymentType orderStatus items totalAmount createdAt")
       .populate("items.productId", "name image") // Fill in product details
       .sort({ createdAt: -1 }); // Newest first
-
+    console.log("User Orders:", orders);
     res.status(200).json({ orders });
   } catch (error) {
     console.log("Get Orders Error:", error);
