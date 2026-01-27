@@ -1,3 +1,4 @@
+const Cart = require("../models/cart");
 const Order = require("../models/order");
 
 exports.addOrder = async (req, res) => {
