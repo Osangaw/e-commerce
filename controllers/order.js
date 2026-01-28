@@ -50,6 +50,8 @@ exports.addOrder = async (req, res) => {
 
     const savedOrder = await order.save();
     const deleteResult = await Cart.deleteOne({ user: userId });
+    console.log("order created:", savedOrder);
+    
     res.status(201).json({ 
         message: "Order placed successfully", 
         order: savedOrder 
