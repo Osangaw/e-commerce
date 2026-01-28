@@ -38,7 +38,7 @@ exports.addOrder = async (req, res) => {
 
     // 4. Create Order
     const order = new Order({
-      user: userId, // ✅ Passes the ID found in your token
+      user: userId,
       addressId,
       totalAmount,
       items,
@@ -50,7 +50,7 @@ exports.addOrder = async (req, res) => {
 
     const savedOrder = await order.save();
     const deleteCart = await Cart.deleteOne({ userId });
-    console.log("Cart cleared after order:", deleteCart);
+   // console.log("Cart cleared after order:", deleteCart);
 
     
     res.status(201).json({ 
