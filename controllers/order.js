@@ -49,10 +49,8 @@ exports.addOrder = async (req, res) => {
     });
 
     const savedOrder = await order.save();
-    const deleteResult = await Cart.deleteOne({ user: userId });
+    await Cart.deleteOne({ userId });
     
-    // 🔍 LOGGING: Check your terminal to see if this prints
-    console.log(`Cart deletion attempted for User ${userId}. Deleted count:`, deleteResult.deletedCount);
     res.status(201).json({ 
         message: "Order placed successfully", 
         order: savedOrder 
