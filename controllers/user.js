@@ -6,7 +6,7 @@ const sendEmail = require("../util/mailService");
 
 const generateToken = (user) => {
   return jwt.sign(
-    { id: user._id, email: user.email },   
+    { id: user._id, email: user.email, role: user.role},   
     process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
