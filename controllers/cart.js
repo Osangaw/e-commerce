@@ -32,7 +32,7 @@ exports.addToCart = async (req, res) => {
     // 4. Create Cart if it doesn't exist
     if (!cart) {
       cart = new Cart({
-        userId,
+        userId: userId,
         items: [],
       });
     }
