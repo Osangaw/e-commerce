@@ -39,7 +39,7 @@ const orderSchema = new mongoose.Schema({
   },
   orderStatus: [
     {
-      type: { type: String, enum: ["ordered", "packed", "shipped", "delivered"], default: "ordered" },
+      type: { type: String, enum: ["ordered", "packed", "shipped", "delivered", "cancelled"], default: "ordered" },
       date: { type: Date },
       isCompleted: { type: Boolean, default: false },
     },
