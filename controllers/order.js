@@ -68,11 +68,10 @@ exports.getOrders = async (req, res) => {
   try {
     const userId = req.user.id || req.user._id;
 
-    // Fetch orders belonging to this specific user
     const orders = await Order.find({ user: userId })
       .select("_id paymentStatus paymentType orderStatus items totalAmount createdAt")
-      .populate("items.productId", "name image") // Fill in product details
-      .sort({ createdAt: -1 }); // Newest first
+      .populate("items.productId", "name image") 
+      .sort({ createdAt: -1 }); 
     console.log("User Orders:", orders);
     res.status(200).json({ orders });
   } catch (error) {
@@ -123,6 +122,48 @@ exports.updateOrderStatus = async (req, res) => {
 
     res.status(200).json({ message: "Status updated", order: updatedOrder });
   } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+exports.cancelOrder = async (req, res) => {
+  try {
+    const userId = req.user.id || req.user._id;
+    const { orderId } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({ error: "Order ID is required" });
+    }
+
+
+    const order = await Order.findOne({ _id: orderId, user: userId });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+   
+    const isShipped = order.orderStatus.find(
+      (status) => (status.type === "shipped" || status.type === "delivered") && status.isCompleted === true
+    );
+
+    if (isShipped) {
+      return res.status(400).json({ error: "Cannot cancel order. It has already been shipped or delivered." });
+    }
+
+    order.paymentStatus = "cancelled";
+    
+    // We keep the original 'ordered' date, but set the rest to 'cancelled'
+    order.orderStatus = [
+        { type: "ordered", isCompleted: true, date: order.createdAt },
+        { type: "cancelled", isCompleted: true, date: new Date() }
+    ];
+
+    await order.save();
+
+    res.status(200).json({ message: "Order cancelled successfully", order });
+  } catch (error) {
+    console.log("Cancel Order Error:", error);
     res.status(400).json({ error: error.message });
   }
 };
