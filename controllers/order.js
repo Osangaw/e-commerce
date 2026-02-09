@@ -69,9 +69,11 @@ exports.getOrders = async (req, res) => {
     const userId = req.user.id || req.user._id;
 
     const orders = await Order.find({ user: userId })
-      .select("_id paymentStatus paymentType orderStatus items totalAmount createdAt")
-      .populate("items.productId", "name image") 
+      .select("_id paymentStatus paymentType orderStatus items totalAmount createdAt addressId")
+      .populate("items.productId", "name image")
+      .populate("addressId")
       .sort({ createdAt: -1 }); 
+      
     console.log("User Orders:", orders);
     res.status(200).json({ orders });
   } catch (error) {
@@ -79,12 +81,13 @@ exports.getOrders = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-// 3. GET ALL ORDERS (Admin)
+
 exports.allOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
       .populate("user", "name email")       
       .populate("items.productId", "name image") 
+      .populate("addressId")
       .sort({ createdAt: -1 });
 
     // Calculate total sales for convenience
