@@ -170,3 +170,27 @@ exports.cancelOrder = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
+
+exports.getOrderDetails = async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({ error: "Order ID is required" });
+    }
+
+    const order = await Order.findById(orderId)
+      .populate("items.productId", "name image")
+      .populate("addressId")
+      .populate("user", "name email");
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.status(200).json({ order });
+  } catch (error) {
+    console.log("Get Order Details Error:", error);
+    res.status(400).json({ error: error.message });
+  }
+};
