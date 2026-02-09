@@ -71,7 +71,7 @@ exports.getOrders = async (req, res) => {
     const orders = await Order.find({ user: userId })
       .select("_id paymentStatus paymentType orderStatus items totalAmount createdAt addressId")
       .populate("items.productId", "name image")
-      .populate("addressId")
+      //.populate("addressId")
       .sort({ createdAt: -1 }); 
       
     console.log("User Orders:", orders);
@@ -87,7 +87,7 @@ exports.allOrders = async (req, res) => {
     const orders = await Order.find({})
       .populate("user", "name email")       
       .populate("items.productId", "name image") 
-      .populate("addressId")
+      //.populate("addressId")
       .sort({ createdAt: -1 });
 
     // Calculate total sales for convenience
