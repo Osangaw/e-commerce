@@ -8,5 +8,5 @@ router.get("/get", auth, getOrders);
 router.get("/all", auth, isAdmin, allOrders);
 router.patch("/updateStatus/:id", auth, isAdmin, updateOrderStatus);
 router.post("/cancel", auth, cancelOrder);
-router.post('/order/get-order-details', auth, getOrderDetails);
+router.post('/get-order-details', auth, getOrderDetails);
 module.exports = router;

@@ -73,34 +73,34 @@ exports.getAddressById = async (req, res) => {
 }
 
 exports.updateAddress = async (req, res) => {
-  console.log('req.body;', req.body);
 
   try {
-    const { payload } = req.body;
-    if (!payload) {
-        return res.status(400).json({ error: "Payload is missing" });
+    const userId = req.user.id;
+    const { _id, name, address, city, postalCode, country, phoneNumber } = req.body;
+
+    if (!_id) {
+        return res.status(400).json({ error: "Address ID is required" });
     }
 
-    const { _id, name, address, city, postalCode, country, phoneNumber } = payload;
-    
-    const userId =  req.body.userId;
-
+    // 3. Find the specific address that belongs to THIS user
     const addressDoc = await ShippingAddress.findOne({ 
       _id: _id, 
-      userId 
+      userId: userId 
     });
 
     if (!addressDoc) {
        return res.status(404).json({ message: "Address not found or unauthorized" });
     }
 
-    addressDoc.name = name;
-    addressDoc.address = address;
-    addressDoc.city = city;
-    addressDoc.postalCode = postalCode;
-    addressDoc.country = country;
-    addressDoc.phoneNumber = phoneNumber;
+    // 4. Update fields
+    if (name) addressDoc.name = name;
+    if (address) addressDoc.address = address;
+    if (city) addressDoc.city = city;
+    if (postalCode) addressDoc.postalCode = postalCode;
+    if (country) addressDoc.country = country;
+    if (phoneNumber) addressDoc.phoneNumber = phoneNumber;
 
+    // 5. Save updates
     const savedAddress = await addressDoc.save();
     
     return res.status(200).json({ 
@@ -109,7 +109,7 @@ exports.updateAddress = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    console.log("Update Address Error:", error);
     return res.status(400).json({ error: error.message });
   }
 };

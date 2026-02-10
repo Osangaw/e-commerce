@@ -1,5 +1,6 @@
 const Cart = require("../models/cart");
 const Order = require("../models/order");
+const Address = require("../models/address");
 
 exports.addOrder = async (req, res) => {
   try {
@@ -17,7 +18,7 @@ exports.addOrder = async (req, res) => {
         paymentInfo 
     } = req.body;
 
-    // 2. Define Status
+    // Define Status
     const orderStatus = [
       { type: "ordered", date: new Date(), isCompleted: true },
       { type: "packed", isCompleted: false },
@@ -25,7 +26,7 @@ exports.addOrder = async (req, res) => {
       { type: "delivered", isCompleted: false },
     ];
 
-    // 3. Define Payment Status
+    // Define Payment Status
     let paymentStatus = "pending";
     if (paymentType === "cod") {
         paymentStatus = "pending";
@@ -36,7 +37,7 @@ exports.addOrder = async (req, res) => {
         paymentStatus = "completed"; 
     }
 
-    // 4. Create Order
+    // Create Order
     const order = new Order({
       user: userId,
       addressId,
@@ -49,10 +50,10 @@ exports.addOrder = async (req, res) => {
     });
 
     const savedOrder = await order.save();
-    const deleteCart = await Cart.deleteOne({ userId });
-   // console.log("Cart cleared after order:", deleteCart);
-
     
+    // Clear cart
+    await Cart.deleteOne({ userId });
+
     res.status(201).json({ 
         message: "Order placed successfully", 
         order: savedOrder 
@@ -71,10 +72,9 @@ exports.getOrders = async (req, res) => {
     const orders = await Order.find({ user: userId })
       .select("_id paymentStatus paymentType orderStatus items totalAmount createdAt addressId")
       .populate("items.productId", "name image")
-      //.populate("addressId")
+      .populate("addressId")
       .sort({ createdAt: -1 }); 
       
-    console.log("User Orders:", orders);
     res.status(200).json({ orders });
   } catch (error) {
     console.log("Get Orders Error:", error);
@@ -82,15 +82,15 @@ exports.getOrders = async (req, res) => {
   }
 };
 
+// (Admin)
 exports.allOrders = async (req, res) => {
   try {
     const orders = await Order.find({})
       .populate("user", "name email")       
       .populate("items.productId", "name image") 
-      //.populate("addressId")
+      .populate("addressId") // ✅ Populates address for Admin Dashboard Popup
       .sort({ createdAt: -1 });
 
-    // Calculate total sales for convenience
     const totalSales = orders.reduce((acc, order) => {
         return order.paymentStatus === 'completed' ? acc + order.totalAmount : acc;
     }, 0);
@@ -101,13 +101,25 @@ exports.allOrders = async (req, res) => {
   }
 };
 
-// 4. UPDATE ORDER STATUS (Admin)
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { orderId, type } = req.body;
 
-    // Logic: Find the order by ID AND the specific status type inside the array
-    // Then update that specific item's 'isCompleted' and 'date'
+    // ✅ SPECIAL HANDLING FOR CANCELLATION
+    if (type === "cancelled") {
+        const order = await Order.findById(orderId);
+        if (!order) return res.status(404).json({ message: "Order not found" });
+
+        order.paymentStatus = "cancelled";
+        order.orderStatus = [
+            { type: "ordered", isCompleted: true, date: order.createdAt },
+            { type: "cancelled", isCompleted: true, date: new Date() }
+        ];
+
+        const updatedOrder = await order.save();
+        return res.status(200).json({ message: "Order cancelled by admin", order: updatedOrder });
+    }
+
     const updatedOrder = await Order.findOneAndUpdate(
       { _id: orderId, "orderStatus.type": type },
       {
@@ -116,7 +128,7 @@ exports.updateOrderStatus = async (req, res) => {
           "orderStatus.$.date": new Date(),
         },
       },
-      { new: true } // Return the updated document
+      { new: true }
     );
 
     if (!updatedOrder) {
@@ -138,14 +150,12 @@ exports.cancelOrder = async (req, res) => {
       return res.status(400).json({ error: "Order ID is required" });
     }
 
-
     const order = await Order.findOne({ _id: orderId, user: userId });
 
     if (!order) {
       return res.status(404).json({ error: "Order not found" });
     }
 
-   
     const isShipped = order.orderStatus.find(
       (status) => (status.type === "shipped" || status.type === "delivered") && status.isCompleted === true
     );
@@ -156,7 +166,6 @@ exports.cancelOrder = async (req, res) => {
 
     order.paymentStatus = "cancelled";
     
-    // We keep the original 'ordered' date, but set the rest to 'cancelled'
     order.orderStatus = [
         { type: "ordered", isCompleted: true, date: order.createdAt },
         { type: "cancelled", isCompleted: true, date: new Date() }
@@ -181,7 +190,7 @@ exports.getOrderDetails = async (req, res) => {
 
     const order = await Order.findById(orderId)
       .populate("items.productId", "name image")
-      .populate("addressId")
+      .populate("addressId") // ✅ Populates address
       .populate("user", "name email");
 
     if (!order) {

@@ -44,7 +44,7 @@ app.use("/cart", cartRoute);
 app.use("/address", shippingRoute);
 app.use("/order", orderRoute)
 
-const PORT = process.env.PORT || 3030;
+const PORT = process.env.PORT || 3031;
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

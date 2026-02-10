@@ -34,10 +34,6 @@ const ShippingAddressSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-const ShippingAddress = mongoose.model(
-  "ShippingAddress",
-  ShippingAddressSchema
-);
+const ShippingAddress = mongoose.model("Address", ShippingAddressSchema);
 
 module.exports = ShippingAddress;

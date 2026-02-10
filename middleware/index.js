@@ -19,7 +19,6 @@ exports.auth = (req, res, next) => {
 };
 
 exports.isAdmin = (req, res, next) => {
-  console.log("isAdmin Middleware received User:", req.user);
   if (req.user && req.user.role === "admin") {
     next();
   } else {

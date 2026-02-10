@@ -8,7 +8,7 @@ const orderSchema = new mongoose.Schema({
   },
   addressId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "UserAddress.address", // Linking to the specific address sub-document
+    ref: "Address",
     required: true,
   },
   totalAmount: {
@@ -29,10 +29,9 @@ const orderSchema = new mongoose.Schema({
   },
   paymentType: {
     type: String,
-    enum: ["cod", "card"], // Cash on Delivery or Card (Paystack)
+    enum: ["cod", "card"], 
     required: true,
   },
-  // Store the Paystack Reference so you can track it later
   paymentInfo: {
     reference: { type: String }, 
     status: { type: String }
