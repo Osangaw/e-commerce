@@ -39,17 +39,15 @@ exports.signUp = async (req, res) => {
       password: encryptedPassword,
       role,
     });
-    try {
-      const otp = randomNumber();
-      const token = new Token({ email, token: otp });
-     // await sendEmail(email, otp);
-      //await token.save();
-      //console.log("email sent", otp);
-    } catch (err) {
-      console.log("error in sending mail", err);
-    }
-console.log('password:', encryptedPassword);
-
+    // try {
+    //   const otp = randomNumber();
+    //   const token = new Token({ email, token: otp });
+    //  await sendEmail(email, otp);
+    //   await token.save();
+    //   console.log("email sent", otp);
+    // } catch (err) {
+    //   console.log("error in sending mail", err);
+    // }
     await newUser.save();
     console.log("user data:", newUser);
 
@@ -82,8 +80,7 @@ exports.signIn = async (req, res) => {
             token: token
         });
     } else {
-        // ✅ CRITICAL FIX: You were missing this part!
-        // If password is wrong, tell the frontend!
+       
         return res.status(400).json({ message: "Invalid Password" });
     }
     
